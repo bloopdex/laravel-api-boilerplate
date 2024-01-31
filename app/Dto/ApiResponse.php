@@ -10,12 +10,12 @@ class ApiResponse
      * Generate a success response.
      *
      * @param string $message
-     * @param $data
-     * @param int $page
-     * @param int $size
-     * @param array $extra
+     * @param null $data
+     * @param int|null $page
+     * @param int|null $size
+     * @param null $extra
      * @param int $statusCode
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public static function success(string $message, $data = null, int $page = null, int $size = null, $extra = null, int $statusCode = 200): JsonResponse
     {
@@ -46,10 +46,10 @@ class ApiResponse
      * @param string $message
      * @param string $code
      * @param int $statusCode
-     * @param array $errors
+     * @param $errors
      * @return \Illuminate\Http\JsonResponse
      */
-    public static function error(string $message, string $code, int $statusCode = 400, $errors = []): JsonResponse
+    public static function error(string $message, string $code, int $statusCode = 400, $errors = null): JsonResponse
     {
         return response()->json([
             'status' => false,

@@ -6,7 +6,6 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -17,31 +16,73 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 /**
  * Class User
  *
- * @property int $id
- * @property string $name
- * @property string $email
+ * @property int $user_id
+ * @property string|null $username
+ * @property string|null $password
+ * @property string|null $first_name
+ * @property string|null $last_name
+ * @property string|null $email
  * @property string|null $phone
- * @property string $password
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property int|null $school_id
+ * @property bool|null $is_archived
+ *
+ * @property School|null $school
+ * @property Collection|Role[] $roles
  *
  * @package App\Models
  */
 class User extends Authenticatable implements JWTSubject, HasMedia
 {
     use InteractsWithMedia;
-    protected $table = 'users';
 
-    protected $hidden = [
-        'password'
-    ];
+	protected $table = 'Users';
+	protected $primaryKey = 'user_id';
+	public $timestamps = false;
 
-    protected $fillable = [
-        'name',
-        'email',
-        'phone',
-        'password',
-    ];
+	protected $casts = [
+		'school_id' => 'int',
+		'is_archived' => 'bool'
+	];
+
+	protected $hidden = [
+		'password'
+	];
+
+	protected $fillable = [
+		'username',
+		'password',
+		'first_name',
+		'last_name',
+		'email',
+		'phone',
+		'school_id',
+		'is_archived'
+	];
+
+	public function school()
+	{
+		return $this->belongsTo(School::class, 'school_id');
+	}
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'User_Roles', 'user_id', 'role_id');
+    }
+
+    public function permissions()
+    {
+        return $this->hasManyThrough(Permission::class, Role::class, 'role_id', 'permission_id');
+    }
+
+    public function hasRole($role)
+    {
+        return $this->roles()->where('role_name', $role)->exists();
+    }
+
+    public function hasPermission($permission)
+    {
+        return $this->permissions()->where('permission_name', $permission)->exists();
+    }
 
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
@@ -97,5 +138,4 @@ class User extends Authenticatable implements JWTSubject, HasMedia
     {
         return url($this->getFirstMediaUrl('users-image'));
     }
-
 }
